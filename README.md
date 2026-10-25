@@ -55,5 +55,5 @@ jupyter nbconvert --to notebook --execute --inplace notebooks/eda.ipynb
 Диаграммы рендерятся через PlantUML:
 
 ```bash
-java -jar plantuml.jar -tpng docs/diagrams/*.puml
+java -jar plantuml.jar -charset UTF-8 -tpng docs/diagrams/*.puml   # нужен Graphviz
 ```

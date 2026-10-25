@@ -1,0 +1,38 @@
+@startuml c4_containers
+!include <C4/C4_Container>
+HIDE_STEREOTYPE()
+
+title C4. Уровень 2: контейнеры
+
+Person(spec, "Специалист клиники")
+Person(admin, "Администратор / ML-инженер")
+System_Ext(app, "Клиентское приложение", "Веб-интерфейс клиники")
+System_Ext(src, "Источник новых порций", "batch_*.csv + изображения")
+
+System_Boundary(s, "Система анализа лица") {
+    Container(api, "API", "FastAPI, Python 3.11", "Прием фото, проверка качества, ответ с точками и индексами, прием правок")
+    Container(ml, "ML-модуль", "ONNX Runtime", "Детектор лица и модель ключевых точек, уверенность предсказания")
+    Container(pipe, "Пайплайн обработки", "DVC, Python, pandas", "Проверка качества, очистка, признаки, обучение, предсказания для порций")
+    ContainerDb(store, "Хранилище данных и артефактов", "DVC remote", "Изображения, CSV порций, предсказания, модели ONNX")
+    Container(mlflow, "MLflow", "Tracking, Model Registry", "Эксперименты, NME, версии моделей")
+    Container(kpi, "Расчет показателей", "Python, Evidently", "NME на правках, доля низкой уверенности, доля без лица, дрейф индексов")
+    Container(dash, "Панель показателей", "Evidently UI", "Показатели по порциям и во времени")
+}
+
+Rel(spec, app, "Работает с фото клиента")
+Rel(app, api, "REST", "HTTPS / JSON")
+Rel(api, ml, "Предсказать точки", "in-process")
+Rel(api, store, "Сохраняет фото и правки")
+Rel(src, pipe, "Новая порция")
+Rel(pipe, store, "Версии данных и моделей", "dvc push / pull")
+Rel(pipe, ml, "Предсказания для порции")
+Rel(pipe, mlflow, "Параметры, метрики, модель")
+Rel(ml, mlflow, "Берет утвержденную версию модели")
+Rel(pipe, kpi, "Запускает пересчет")
+Rel(kpi, store, "Читает разметку, предсказания, правки")
+Rel(kpi, mlflow, "Логирует показатели порции")
+Rel(kpi, dash, "Отчеты")
+Rel(admin, dash, "Смотрит показатели")
+Rel(admin, pipe, "dvc repro, обучение")
+
+@enduml

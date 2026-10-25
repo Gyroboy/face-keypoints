@@ -1,0 +1,41 @@
+@startuml usecase
+left to right direction
+skinparam packageStyle rectangle
+title Варианты использования
+
+actor "Специалист клиники" as spec
+actor "Администратор /\nML-инженер" as admin
+actor "Источник\nновых порций" as src <<система>>
+
+rectangle "Система анализа лица" {
+    usecase "Загрузить фото клиента" as UC1
+    usecase "Проверить качество фото" as UC2
+    usecase "Получить ключевые точки" as UC3
+    usecase "Получить индексы пропорций\nи симметрии" as UC4
+    usecase "Исправить точки вручную" as UC5
+    usecase "Получить предупреждение\n(поворот, открытый рот,\nмаленькое лицо)" as UC6
+
+    usecase "Передать новую порцию данных" as UC7
+    usecase "Запустить пайплайн обработки" as UC8
+    usecase "Обучить и зарегистрировать модель" as UC9
+    usecase "Развернуть версию модели" as UC10
+    usecase "Смотреть панель показателей" as UC11
+    usecase "Настроить пороги качества" as UC12
+}
+
+spec --> UC1
+spec --> UC4
+spec --> UC5
+UC1 ..> UC2 : <<include>>
+UC4 ..> UC3 : <<include>>
+UC6 ..> UC2 : <<extend>>
+
+src --> UC7
+UC7 ..> UC8 : <<include>>
+
+admin --> UC8
+admin --> UC9
+admin --> UC10
+admin --> UC11
+admin --> UC12
+@enduml

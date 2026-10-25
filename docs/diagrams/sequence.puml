@@ -1,0 +1,43 @@
+@startuml sequence
+title Обработка новой порции данных
+autonumber
+
+actor "Источник порций" as src
+participant "Пайплайн\n(DVC)" as pipe
+participant "Проверка\nкачества" as qc
+participant "Признаки" as feat
+participant "ML-модуль\n(ONNX Runtime)" as ml
+database "Хранилище\n(DVC remote)" as store
+participant "Расчет\nпоказателей" as kpi
+participant "MLflow" as mlflow
+participant "Панель\nпоказателей" as dash
+actor "ML-инженер" as admin
+
+src -> pipe : новая порция batch_NN (CSV + изображения)
+pipe -> store : dvc add / push, версия порции
+
+pipe -> qc : проверить порцию
+qc -> qc : схема, 68 точек, точки в кадре (допуск 2 px),\nIOD >= 30 px, стороны, дубликаты (sha256, dHash)
+alt есть нарушения
+    qc -> store : отклоненные строки + отчет
+end
+qc --> pipe : чистая порция
+
+pipe -> feat : посчитать признаки
+feat --> pipe : yaw, roll, открытость рта, размер лица, индексы
+
+pipe -> ml : предсказать точки по изображениям
+ml -> ml : детектор лица -> модель точек
+ml --> pipe : 8 точек + уверенность
+pipe -> store : сохранить предсказания
+
+pipe -> kpi : пересчитать показатели
+kpi -> store : разметка, предсказания, правки специалистов
+kpi -> kpi : NME, доля низкой уверенности,\nдоля без лица, средние индексы, дрейф (Evidently)
+kpi -> mlflow : метрики порции
+kpi -> dash : обновить отчет
+
+alt NME вырос > 20% или дрейф индексов
+    dash -> admin : сигнал: проверить данные / дообучить
+end
+@enduml
