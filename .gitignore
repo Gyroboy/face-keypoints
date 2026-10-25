@@ -1,0 +1,11 @@
+# картинки 300W (~2 ГБ), в git только csv
+data/raw/300w/
+
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+mlruns/
+mlartifacts/
+.vscode/
+.idea/

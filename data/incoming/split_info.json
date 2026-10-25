@@ -1,0 +1,11 @@
+{
+  "seed": 42,
+  "initial_frac": 0.6,
+  "files": {
+    "data/interim/initial.csv": 360,
+    "data/incoming/batch_01.csv": 60,
+    "data/incoming/batch_02.csv": 60,
+    "data/incoming/batch_03.csv": 60,
+    "data/incoming/batch_04.csv": 60
+  }
+}
